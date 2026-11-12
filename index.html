@@ -207,22 +207,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   .vc-plate{width:auto}
 }
 
-/* How it works / About the model */
-.info{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
-.info h2{margin:0;font-size:24px}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.info-card{border-radius:24px;padding:20px 22px;scroll-margin-top:16px}
-.info-card h3{margin:0 0 6px;font-size:17px}
-.info-card p{margin:0;font-size:15px;line-height:1.5}
-.info-num{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-bottom:10px;background:#F2A900;color:#0B1F3A}
-.info-card.next{border:2px dashed #F2A900}
-.va .info h2{font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em}
-.va .info-card,.vb .info-card{background:#fff;color:#0B1F3A}
-.va .info-card p,.vb .info-card p{color:#44597A}
-.vb .info h2{font-family:'Space Grotesk',sans-serif}
-.vc .info h2{font-family:'IBM Plex Mono',monospace;color:#fff}
-.vc .info-card{background:#12284A;color:#fff}
-.vc .info-card p{color:#C6D3E8}
 </style>
 </head>
 <body>
@@ -244,7 +228,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       <div class="va-logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="#F2A900" stroke-width="2.5"/><line x1="13" y1="13" x2="18" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
       <div><div class="va-name">No name yet</div><div class="va-sub">Motor health check</div></div>
     </div>
-    <nav class="va-nav" aria-label="Main"><a href="#view-a" class="on">Check readings</a><a href="#how-a">How it works</a><a href="#model-a">About the model</a></nav>
   </header>
 
   <section class="va-console" aria-label="Motor check console">
@@ -304,7 +287,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       </div>
     </div>
   </section>
-  <section class="info" data-info="a"></section>
 </div>
 </main>
 
@@ -316,7 +298,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       <div class="vb-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16 A8 8 0 0 1 20 16" fill="none" stroke="#1F5FD1" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16" x2="8" y2="10" stroke="#0B1F3A" stroke-width="2.5" stroke-linecap="round"/></svg></div>
       <span class="vb-name">No name yet</span>
     </div>
-    <nav class="vb-nav" aria-label="Main"><a href="#view-b" class="on">Check readings</a><a href="#how-b">How it works</a><a href="#model-b">About the model</a></nav>
   </header>
 
   <div>
@@ -381,7 +362,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
     </div>
     <div class="vb-grid" id="vb-grid"></div>
   </section>
-  <section class="info" data-info="b"></section>
 </div>
 </main>
 
@@ -393,7 +373,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       <div class="vc-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="14" height="10" rx="3" fill="none" stroke="#DCE6F5" stroke-width="2"/><line x1="17" y1="12" x2="22" y2="12" stroke="#F2A900" stroke-width="2.5" stroke-linecap="round"/></svg></div>
       <div><div class="vc-name">No name yet</div><div class="vc-sub">Motor health check</div></div>
     </div>
-    <nav class="vc-nav" aria-label="Main"><a href="#view-c" class="on">Check readings</a><a href="#how-c">How it works</a><a href="#model-c">About the model</a></nav>
   </header>
 
   <div class="vc-main">
@@ -464,7 +443,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       </div>
     </aside>
   </div>
-  <section class="info" data-info="c"></section>
 </div>
 </main>
 
@@ -561,21 +539,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   '<div class="vb-ch" role="group" aria-label="Product type"><span class="lbl">Product type</span>' +
   TYPES.map(function (t) { return '<button type="button" class="vb-type" data-type="' + t.id + '"><b>' + t.id + '</b><span>' + t.name + '</span></button>'; }).join('') +
   '</div>';
-
-  // ---------- How it works / About the model ----------
-  document.querySelectorAll('[data-info]').forEach(function (el) {
-    var v = el.dataset.info;
-    el.id = 'how-' + v;
-    el.setAttribute('aria-labelledby', 'how-title-' + v);
-    el.innerHTML =
-      '<h2 id="how-title-' + v + '">How it works</h2>' +
-      '<div class="info-grid">' +
-        '<div class="info-card"><span class="info-num">1</span><h3>Enter readings</h3><p>Type values, use the controls, or load a sample to see how the motor responds.</p></div>' +
-        '<div class="info-card"><span class="info-num">2</span><h3>Estimate power</h3><p>Speed and torque give mechanical power: torque × speed × 2π ÷ 60.</p></div>' +
-        '<div class="info-card"><span class="info-num">3</span><h3>Compare</h3><p>The result is checked against a 3,500–8,500 W reference range and the baseline sample.</p></div>' +
-        '<div class="info-card next" id="model-' + v + '"><span class="info-num">→</span><h3>About the model</h3><p>Next step: a machine-learning model trained on all six readings will flag motors likely to need maintenance.</p></div>' +
-      '</div>';
-  });
 
   // ---------- Update ----------
   function update() {
