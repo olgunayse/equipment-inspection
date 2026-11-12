@@ -42,7 +42,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 1.35fr 1fr;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
       gap: 20px;
     }
 
@@ -116,9 +116,40 @@
       border-radius: 14px;
     }
 
-    .result[data-state="ready"] { background: #1b3150; border: 1px dashed #7590b5; }
-    .result[data-state="flagged"] { background: #fff0cb; color: #382707; border-color: #f7bd58; }
+    .result[data-state="ready"] {
+      background: #1b3150;
+      border: 1px dashed #7590b5;
+    }
+
+    .result[data-state="flagged"] {
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+    }
+
     #detail { white-space: pre-line; margin-bottom: 0; }
+
+    .result[data-state="flagged"] #detail {
+      order: -1;
+      margin: 0 0 4px;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .result[data-state="flagged"] #status { color: #f7bd58; }
+
+    .result-limit {
+      margin: 12px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid #526889;
+      color: #d0def4;
+      font-size: 14px;
+    }
 
     .range { margin-top: 20px; }
 
@@ -251,6 +282,7 @@
         <div class="result" id="result" data-state="ready" role="status">
           <strong id="status">No inspection run yet</strong>
           <p id="detail">Choose a sample scenario or enter your readings and click Check conditions.</p>
+          <p class="result-limit" id="result-limit" hidden></p>
         </div>
 
         <div class="range" id="range" hidden aria-hidden="true">
@@ -282,6 +314,7 @@
     const result = document.querySelector('#result');
     const statusText = document.querySelector('#status');
     const detail = document.querySelector('#detail');
+    const resultLimit = document.querySelector('#result-limit');
     const range = document.querySelector('#range');
     const marker = document.querySelector('#marker');
     const comparison = document.querySelector('#comparison');
@@ -291,6 +324,9 @@
     const minPower = 3500;
     const maxPower = 9000;
     const gaugeMax = 12000;
+    const rangeLabel =
+      'Demo range: ' + minPower.toLocaleString('en-US') +
+      '–' + maxPower.toLocaleString('en-US') + ' W';
 
     function estimatePower(speed, torque) {
       return 2 * Math.PI * speed * torque / 60;
@@ -309,6 +345,7 @@
       statusText.textContent = 'No inspection run yet';
       detail.textContent =
         'Choose a sample scenario or enter your readings and click Check conditions.';
+      resultLimit.hidden = true;
       range.hidden = true;
       comparison.hidden = true;
     }
@@ -328,21 +365,23 @@
         return;
       }
 
-      if (power < minPower) {
-        result.dataset.state = 'flagged';
-        statusText.textContent = 'Power below demo range';
-      } else if (power > maxPower) {
-        result.dataset.state = 'flagged';
-        statusText.textContent = 'Power above demo range';
+      const belowRange = power < minPower;
+      const aboveRange = power > maxPower;
+      const flagged = belowRange || aboveRange;
+      const powerText = Math.round(power).toLocaleString('en-US') + ' W';
+
+      result.dataset.state = flagged ? 'flagged' : 'clear';
+
+      if (flagged) {
+        statusText.textContent = belowRange ? 'Below demo range' : 'Above demo range';
+        detail.textContent = powerText;
+        resultLimit.textContent = rangeLabel;
       } else {
-        result.dataset.state = 'clear';
         statusText.textContent = 'Power within demo range';
+        detail.textContent = 'Estimated power: ' + powerText + '\n' + rangeLabel;
       }
 
-      detail.textContent =
-        'Estimated power: ' + Math.round(power).toLocaleString('en-US') +
-        ' W\nDemo range: 3,500–9,000 W';
-
+      resultLimit.hidden = !flagged;
       range.hidden = false;
       marker.style.left = Math.min(power / gaugeMax * 100, 100) + '%';
 
