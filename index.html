@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title> No Named Yet · Motor reading check — design directions</title>
+<title>No name yet · Motor health check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -102,7 +102,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
 .vb h1{margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;letter-spacing:-.01em}
 .vb-lede{margin:6px 0 0;font-size:17px;color:#44597A;max-width:720px}
 .vb-row{display:flex;flex-wrap:wrap;gap:20px}
-.vb-stage{flex:999 1 600px;min-width:0;background:#DCE8FB;border-radius:32px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.vb-stage{flex:999 1 600px;min-width:0;background:#DCE8FB;border-radius:32px;padding:24px;display:flex;flex-direction:column;gap:18px;justify-content:space-between}
 .vb-stage-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .vb-seg{display:flex;flex-wrap:wrap;gap:4px;padding:5px;background:#fff;border-radius:999px}
 .vb-seg button{min-height:44px;padding:0 18px;border-radius:999px;border:none;font-weight:600;font-size:15px;background:#fff;color:#13294B}
@@ -206,6 +206,23 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   .vc-co{position:static;width:auto}
   .vc-plate{width:auto}
 }
+
+/* How it works / About the model */
+.info{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.info h2{margin:0;font-size:24px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.info-card{border-radius:24px;padding:20px 22px;scroll-margin-top:16px}
+.info-card h3{margin:0 0 6px;font-size:17px}
+.info-card p{margin:0;font-size:15px;line-height:1.5}
+.info-num{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-bottom:10px;background:#F2A900;color:#0B1F3A}
+.info-card.next{border:2px dashed #F2A900}
+.va .info h2{font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em}
+.va .info-card,.vb .info-card{background:#fff;color:#0B1F3A}
+.va .info-card p,.vb .info-card p{color:#44597A}
+.vb .info h2{font-family:'Space Grotesk',sans-serif}
+.vc .info h2{font-family:'IBM Plex Mono',monospace;color:#fff}
+.vc .info-card{background:#12284A;color:#fff}
+.vc .info-card p{color:#C6D3E8}
 </style>
 </head>
 <body>
@@ -225,9 +242,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   <header class="va-head">
     <div class="va-brand">
       <div class="va-logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="#F2A900" stroke-width="2.5"/><line x1="13" y1="13" x2="18" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
-      <div><div class="va-name">No Name Yet</div><div class="va-sub">Motor reading check · prototype</div></div>
+      <div><div class="va-name">No name yet</div><div class="va-sub">Motor health check</div></div>
     </div>
-    <nav class="va-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+    <nav class="va-nav" aria-label="Main"><a href="#view-a" class="on">Check readings</a><a href="#how-a">How it works</a><a href="#model-a">About the model</a></nav>
   </header>
 
   <section class="va-console" aria-label="Motor check console">
@@ -263,7 +280,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
 
       <div class="va-mod-top" style="flex-wrap:wrap">
         <h2 class="va-eng" style="font-size:15px">Equipment readings</h2>
-        <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#A9BCD9"><span class="va-led amber" style="width:8px;height:8px"></span>Used by the demo estimate · Loaded: <span data-text="sampleLabel"></span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#A9BCD9"><span class="va-led amber" style="width:8px;height:8px"></span>Used in the power estimate · Loaded: <span data-text="sampleLabel"></span></span>
       </div>
 
       <div class="va-grid" id="va-grid"></div>
@@ -272,7 +289,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
     <div class="va-right">
       <span class="va-eng" style="text-align:center">Estimated mechanical power</span>
       <div data-dial="a" style="max-width:340px;width:100%;margin:0 auto"></div>
-      <div class="va-legend"><span><i style="background:#4C8DFF"></i>Demo range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
+      <div class="va-legend"><span><i style="background:#4C8DFF"></i>Reference range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
       <div style="text-align:center" aria-live="polite">
         <div class="va-power"><span data-text="power" style="font-size:inherit;color:inherit;margin:0"></span><span>W</span></div>
         <div style="margin-top:14px"><span class="va-chip" data-text="status"></span></div>
@@ -287,7 +304,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       </div>
     </div>
   </section>
-  <p class="va-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+  <section class="info" data-info="a"></section>
 </div>
 </main>
 
@@ -297,14 +314,14 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   <header class="vb-head">
     <div class="vb-brand">
       <div class="vb-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16 A8 8 0 0 1 20 16" fill="none" stroke="#1F5FD1" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16" x2="8" y2="10" stroke="#0B1F3A" stroke-width="2.5" stroke-linecap="round"/></svg></div>
-      <span class="vb-name">[PROJECT NAME]</span><span class="vb-tag">Prototype</span>
+      <span class="vb-name">No name yet</span>
     </div>
-    <nav class="vb-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+    <nav class="vb-nav" aria-label="Main"><a href="#view-b" class="on">Check readings</a><a href="#how-b">How it works</a><a href="#model-b">About the model</a></nav>
   </header>
 
   <div>
     <h1>Put the motor on the bench</h1>
-    <p class="vb-lede">Load a sample or slide the faders, then read the dial. The demo estimates mechanical power from speed and torque.</p>
+    <p class="vb-lede">Load a sample or slide the faders, then read the dial. The dial shows estimated mechanical power from speed and torque.</p>
   </div>
 
   <div class="vb-row">
@@ -341,7 +358,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
     <div class="vb-result">
       <h2>Estimated mechanical power</h2>
       <div data-dial="b" style="max-width:330px;width:100%;margin:0 auto"></div>
-      <div class="vb-legend"><span><i style="background:#1F5FD1"></i>Demo range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
+      <div class="vb-legend"><span><i style="background:#1F5FD1"></i>Reference range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
       <div class="vb-out" aria-live="polite">
         <div class="vb-power"><span data-text="power" style="font-size:inherit;color:inherit;margin:0"></span><span>W</span></div>
         <span class="vb-chip"><i></i><span data-text="status"></span></span>
@@ -360,11 +377,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   <section class="vb-read" aria-labelledby="vb-readings">
     <div class="vb-read-head">
       <h2 id="vb-readings">Equipment readings</h2>
-      <span class="vb-hint">Drag a fader or type a value · <b>amber caps</b> feed the demo estimate</span>
+      <span class="vb-hint">Drag a fader or type a value · <b>amber caps</b> feed the power estimate</span>
     </div>
     <div class="vb-grid" id="vb-grid"></div>
   </section>
-  <p class="vb-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+  <section class="info" data-info="b"></section>
 </div>
 </main>
 
@@ -374,9 +391,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   <header class="vc-head">
     <div class="vc-brand">
       <div class="vc-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="14" height="10" rx="3" fill="none" stroke="#DCE6F5" stroke-width="2"/><line x1="17" y1="12" x2="22" y2="12" stroke="#F2A900" stroke-width="2.5" stroke-linecap="round"/></svg></div>
-      <div><div class="vc-name">[PROJECT NAME]</div><div class="vc-sub">Motor reading check · prototype</div></div>
+      <div><div class="vc-name">No name yet</div><div class="vc-sub">Motor health check</div></div>
     </div>
-    <nav class="vc-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+    <nav class="vc-nav" aria-label="Main"><a href="#view-c" class="on">Check readings</a><a href="#how-c">How it works</a><a href="#model-c">About the model</a></nav>
   </header>
 
   <div class="vc-main">
@@ -425,7 +442,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
           </div>
         </div>
       </div>
-      <p class="vc-note">Each reading is pinned to the part of the machine it comes from. <b>Amber outlines</b> feed the demo estimate. Loaded: <span data-text="sampleLabel"></span></p>
+      <p class="vc-note">Each reading is pinned to the part of the machine it comes from. <b>Amber outlines</b> feed the power estimate. Loaded: <span data-text="sampleLabel"></span></p>
     </div>
 
     <aside class="vc-right" aria-label="Result">
@@ -447,7 +464,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
       </div>
     </aside>
   </div>
-  <p class="vc-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+  <section class="info" data-info="c"></section>
 </div>
 </main>
 
@@ -545,19 +562,34 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
   TYPES.map(function (t) { return '<button type="button" class="vb-type" data-type="' + t.id + '"><b>' + t.id + '</b><span>' + t.name + '</span></button>'; }).join('') +
   '</div>';
 
+  // ---------- How it works / About the model ----------
+  document.querySelectorAll('[data-info]').forEach(function (el) {
+    var v = el.dataset.info;
+    el.id = 'how-' + v;
+    el.setAttribute('aria-labelledby', 'how-title-' + v);
+    el.innerHTML =
+      '<h2 id="how-title-' + v + '">How it works</h2>' +
+      '<div class="info-grid">' +
+        '<div class="info-card"><span class="info-num">1</span><h3>Enter readings</h3><p>Type values, use the controls, or load a sample to see how the motor responds.</p></div>' +
+        '<div class="info-card"><span class="info-num">2</span><h3>Estimate power</h3><p>Speed and torque give mechanical power: torque × speed × 2π ÷ 60.</p></div>' +
+        '<div class="info-card"><span class="info-num">3</span><h3>Compare</h3><p>The result is checked against a 3,500–8,500 W reference range and the baseline sample.</p></div>' +
+        '<div class="info-card next" id="model-' + v + '"><span class="info-num">→</span><h3>About the model</h3><p>Next step: a machine-learning model trained on all six readings will flag motors likely to need maintenance.</p></div>' +
+      '</div>';
+  });
+
   // ---------- Update ----------
   function update() {
     var P = watts(state.speed, state.torque);
     var b = SAMPLES.baseline, Pb = watts(b.speed, b.torque);
     var tone = P < LOW_W ? 'below' : (P > HIGH_W ? 'above' : 'within');
-    var diff = P - Pb, pct = diff / Pb * 100, sign = diff < 0 ? '−' : '+';
+    var diff = Math.round(P) - Math.round(Pb), pct = diff / Pb * 100, sign = diff < 0 ? '−' : '+';
     var v = {
       power: fmt(Math.round(P), 0),
       base: fmt(Math.round(Pb), 0),
       diff: sign + fmt(Math.abs(Math.round(diff)), 0) + ' W',
       pct: sign + Math.abs(Math.round(pct)) + '%',
-      status: tone === 'below' ? 'Below demo range' : tone === 'above' ? 'Above demo range' : 'Within demo range',
-      sentence: fmt(Math.round(P), 0) + ' W is ' + tone + ' the 3,500–8,500 W demo range.',
+      status: tone === 'below' ? 'Below reference range' : tone === 'above' ? 'Above reference range' : 'Within reference range',
+      sentence: fmt(Math.round(P), 0) + ' W is ' + tone + ' the 3,500–8,500 W reference range.',
       sampleLabel: SAMPLES[state.sample] ? SAMPLES[state.sample].label : 'Custom values',
       typeLabel: 'TYPE ' + state.type,
       rpmLabel: fmt(state.speed, 0) + ' RPM'
@@ -620,14 +652,18 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A9
     if (['a', 'b', 'c'].indexOf(id) < 0) id = 'a';
     ['a', 'b', 'c'].forEach(function (k) { document.getElementById('view-' + k).hidden = k !== id; });
     document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === id)); });
-    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    // Keep #a / #b / #c in the address bar where allowed (GitHub Pages);
+    // sandboxed previews block this, so ignore the error there.
+    try { if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id); } catch (err) {}
     // re-sweep the needle so each direction shows its animation
     ready = false; update();
     requestAnimationFrame(function () { requestAnimationFrame(function () { ready = true; update(); }); });
   }
-  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (['a', 'b', 'c'].indexOf(h) > -1) show(h); });
   update();
-  show(location.hash.slice(1) || 'a');
+  var startView = 'a';
+  try { var h0 = location.hash.slice(1); var m = h0.match(/^(?:how-|model-|view-)?([abc])$/); startView = m ? m[1] : 'a'; } catch (err) {}
+  show(startView);
 })();
 </script>
 </body>
