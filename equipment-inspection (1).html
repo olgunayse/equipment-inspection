@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equipment Inspection</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef2f8;color:#142844;font:16px system-ui,sans-serif}
+header{background:#101f39;color:white;border-bottom:4px solid #f7bd58;padding:18px max(24px,calc((100vw - 1160px)/2));font-weight:700}
+main{max-width:1208px;margin:auto;padding:28px 24px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:24px;background:#dfeafe;padding:24px 32px;margin-bottom:20px}
+.hero img{width:170px;height:auto;object-fit:contain}
+h1{font-size:clamp(28px,5vw,48px);letter-spacing:-.045em;margin:0}
+h2{font-size:22px;margin:0 0 16px}p{line-height:1.5;margin:10px 0}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:20px}
+form,aside{padding:22px;background:white;border:1px solid #cdd8e9}
+aside{background:#142844;color:#fff;align-self:start}
+fieldset{border:0;border-top:1px solid #cbd8eb;background:#f3f6fc;margin:0 0 13px;padding:9px 12px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+legend{font-size:14px;font-weight:700;padding:0 6px;color:#254781}
+label{display:grid;gap:5px;font-size:13px;font-weight:600}
+input,select,button{font:inherit;padding:9px 11px}input,select{width:100%;min-width:0;border:1px solid #879ab6;background:#fff;color:inherit}
+button{background:#2453bf;color:white;border:0;cursor:pointer;font-weight:700}button:hover{background:#173f9b}button[type=reset]{background:#e5ecf9;color:#142844;margin-left:8px}
+.result{background:#233d62;padding:16px;border-left:4px solid #79a5ff}.result[data-state=flagged]{background:#fff0cb;color:#382707;border-color:#f7bd58}
+small{display:block;margin-top:14px;line-height:1.5;color:#d0def4}
+.range{margin-top:20px}.range[hidden]{display:none}.track{height:12px;position:relative;background:#526889;margin-top:12px}.band{position:absolute;inset:0 25% 0 29.1667%;background:#8fb5ff}.marker{position:absolute;top:-4px;height:20px;width:3px;background:#ffd176;transform:translateX(-50%)}.scale{display:flex;justify-content:space-between;font-size:12px;color:#d0def4;margin-top:6px}
+@media(max-width:750px){.grid{grid-template-columns:1fr}}@media(max-width:480px){.hero{padding:18px;gap:10px}.hero img{width:85px}fieldset{grid-template-columns:1fr}}
+.hero,form,aside{border-radius:20px}fieldset,.result,.tools{border-radius:14px}input,select,button{border-radius:9px}.track,.band{border-radius:99px}.tools{background:#e9f0fc;padding:12px;margin-bottom:18px}.tools strong{display:block;margin-bottom:8px}.tools button{background:white;color:#193968;border:1px solid #a9bad7;margin:0 5px 5px 0;font-size:13px}.tools button:hover{background:#d5e4ff}.comparison{margin-top:18px;padding:13px;border:1px solid #6480a9;border-radius:12px}.comparison summary{cursor:pointer;font-weight:700}.comparison dl{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0 0}.comparison dd{margin:0;text-align:right}
+.result:not([data-state]),.result[data-state=ready]{background:#1b3150;border:1px dashed #7590b5}.result:not([data-state]) p,.result[data-state=ready] p{color:#d7e4f8;margin-bottom:0}</style>
+<header>Predictive Equipment Failure Detection</header>
+<main><section class="hero"><div><h1>Check a machine record</h1><p>Review the sample motor readings or enter your own.</p></div><img src="data:image/png;base64,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" alt="Illustration of a blue industrial electric motor"></section>
+<div class="grid">
+<form id="inspection"><h2>Equipment readings</h2>
+<div class="tools"><strong>Try a sample scenario</strong><button type="button" data-torque="42.8">Baseline</button><button type="button" data-torque="15">Low torque</button><button type="button" data-torque="65">High torque</button></div>
+<fieldset><legend>Temperature</legend>
+<label>Air temperature (K)<input name="air" type="number" min="0.1" step="any" value="298.1" required></label>
+<label>Process temperature (K)<input name="process" type="number" min="0.1" step="any" value="308.6" required></label></fieldset>
+<fieldset><legend>Machine operation</legend>
+<label>Rotational speed (rpm)<input name="speed" type="number" min="0" step="1" value="1551" required></label>
+<label>Torque (N·m)<input name="torque" type="number" min="0" step="any" value="42.8" required></label></fieldset>
+<fieldset><legend>Tool and product</legend>
+<label>Tool wear (min)<input name="wear" type="number" min="0" step="1" value="0" required></label>
+<label>Product type<select name="type"><option>L</option><option selected>M</option><option>H</option></select></label></fieldset>
+<button>Check conditions</button><button type="reset">Reset sample</button></form>
+<aside><h2>Inspection result</h2>
+<div class="result" id="result" role="status"><strong id="status">No inspection run yet</strong><p id="detail">Choose a sample scenario or enter your readings and click Check conditions.</p></div>
+<div class="range" id="range" hidden aria-hidden="true"><strong>Estimated mechanical power</strong><div class="track"><span class="band"></span><span class="marker" id="marker"></span></div><div class="scale"><span>0 W</span><span>12,000+ W</span></div></div><details class="comparison" id="comparison" hidden><summary>Compare with baseline</summary><dl><dt>Torque change</dt><dd id="torque-delta"></dd><dt>Speed change</dt><dd id="speed-delta"></dd><dt>Estimated power change</dt><dd id="power-delta"></dd></dl></details><small>The starter checks an illustrative mechanical-power rule using speed and torque. All six inputs are collected for a future trained model.</small>
+<small>Demo only. This result is for testing the interface.</small></aside>
+</div></main>
+<script>
+const form = document.querySelector('#inspection');
+const result = document.querySelector('#result');
+const statusText = document.querySelector('#status');
+const detail = document.querySelector('#detail');
+const range = document.querySelector('#range');
+const marker = document.querySelector('#marker');
+const comparison = document.querySelector('#comparison');
+const estimatePower = (speed, torque) => 2 * Math.PI * speed * torque / 60;
+function showDelta(id, value, unit) {
+  const formatted = value.toLocaleString(undefined, { maximumFractionDigits: 1, signDisplay: 'exceptZero' });
+  document.getElementById(id).textContent = formatted + ' ' + unit;
+}
+for (const button of form.querySelectorAll('[data-torque]')) {
+  button.addEventListener('click', () => {
+    form.reset();
+    form.elements.torque.value = button.dataset.torque;
+    form.requestSubmit();
+  });
+}
+form.addEventListener('submit', event => {
+  event.preventDefault();
+  const readings = new FormData(form);
+  const speed = Number(readings.get('speed'));
+  const torque = Number(readings.get('torque'));
+  const power = estimatePower(speed, torque);
+  showDelta('torque-delta', torque - 42.8, 'N·m');
+  showDelta('speed-delta', speed - 1551, 'rpm');
+  showDelta('power-delta', power - estimatePower(1551, 42.8), 'W');
+  comparison.hidden = false;
+  const flagged = power < 3500 || power > 9000;
+  range.hidden = false;
+  marker.style.left = Math.min(power / 12000 * 100, 100) + '%';
+  result.dataset.state = flagged ? 'flagged' : 'clear';
+  statusText.textContent = flagged ? 'Demo alert: review speed and torque' : 'No alert from the demo rule';
+  detail.textContent = 'Estimated mechanical power: ' + Math.round(power).toLocaleString() + ' W. Demo range: 3,500–9,000 W.';
+});
+function clearResult() {
+  range.hidden = true;
+  comparison.hidden = true;
+  result.dataset.state = 'ready';
+  statusText.textContent = 'No inspection run yet';
+  detail.textContent = 'Choose a sample scenario or enter your readings and click Check conditions.';
+}
+form.addEventListener('input', clearResult);
+form.addEventListener('reset', clearResult);
+</script>
+</html>
