@@ -1,623 +1,634 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Motor Test Bench</title>
-  <style>
-    :root {
-      --paper: #f5f0e6;
-      --cream: #fffdf7;
-      --ink: #202722;
-      --navy: #17243a;
-      --blue: #203451;
-      --amber: #efc063;
-      --line: #d8d1c2;
-      --light-blue: #cbd7ec;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[PROJECT NAME] · Motor reading check — design directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Shared ---------- */
+*{box-sizing:border-box}
+body{margin:0;background:#E6ECF4}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #F2A900;outline-offset:3px}
+[hidden]{display:none !important}
+.dial{display:block;width:100%;margin:0 auto}
+.needle{transform-origin:100px 100px;transform-box:view-box;transition:transform 1.3s cubic-bezier(.2,.9,.25,1.15)}
+.bar-fill{transition:width .9s ease}
+@keyframes spin{to{stroke-dashoffset:-28}}
+.shaft{animation:spin .66s linear infinite}
+@media (prefers-reduced-motion:reduce){.needle,.bar-fill{transition:none}.shaft{animation:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-    * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
+/* Direction switcher (preview harness) */
+.switcher{background:#0B1F3A;color:#DCE6F5;font-family:Inter,system-ui,sans-serif;padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.switcher strong{font-size:14px;font-weight:600;color:#A9BCD9}
+.switcher .pills{display:flex;flex-wrap:wrap;gap:6px}
+.switcher button{min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid #2A4B7C;background:transparent;color:#DCE6F5;font-weight:600;font-size:14px}
+.switcher button[aria-pressed="true"]{background:#F2A900;border-color:#F2A900;color:#0B1F3A}
 
-    body {
-      margin: 0;
-      background: var(--paper);
-      color: var(--ink);
-      font: 16px system-ui, sans-serif;
-    }
+/* ---------- A · Control panel ---------- */
+.va{background:#E6ECF4;color:#0B1F3A;font-family:Barlow,system-ui,sans-serif;padding:28px 24px 40px;min-height:100vh}
+.va a{color:#0B1F3A;text-decoration:none}.va a:hover{color:#1F5FD1}
+.va-wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.va-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.va-brand{display:flex;align-items:center;gap:12px}
+.va-logo{width:44px;height:44px;border-radius:14px;background:#0B1F3A;display:flex;align-items:center;justify-content:center}
+.va-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:.04em}
+.va-sub{font-size:14px;color:#44597A}
+.va-nav{display:flex;flex-wrap:wrap;gap:24px;font-weight:600;font-size:15px}
+.va-nav .on{border-bottom:3px solid #F2A900;padding-bottom:2px}
+.va-console{background:#0B1F3A;border-radius:34px;padding:26px;display:flex;flex-wrap:wrap;gap:24px;box-shadow:0 0 0 6px #1A3358}
+.va-left{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:18px}
+.va-right{flex:1 1 380px;min-width:0;background:#13294B;border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.va-row{display:flex;flex-wrap:wrap;gap:16px}
+.va-tile{background:#13294B;border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.va-eng{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.14em;color:#A9BCD9;text-transform:uppercase;margin:0}
+.va-led{width:9px;height:9px;border-radius:50%;background:#33507D;flex:none;display:inline-block}
+.va-led.amber{background:#F2A900}
+.va-key{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 14px;border-radius:16px;text-align:left;background:#18325A;color:#DCE6F5;border:2px solid #2A4B7C;box-shadow:0 4px 0 #06111F}
+.va-key .va-led{width:10px;height:10px}
+.va-key b{display:block;font-size:16px}
+.va-key small{font-family:'JetBrains Mono',monospace;font-size:12px;opacity:.85}
+.va-key[aria-pressed="true"]{background:#F2A900;color:#0B1F3A;border-color:#F2A900;box-shadow:0 4px 0 #9A6B00}
+.va-key[aria-pressed="true"] .va-led{background:#0B1F3A}
+.va-key:active,.va-round:active{transform:translateY(3px);box-shadow:0 1px 0 #06111F}
+.va-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.va-mod{background:#13294B;border-radius:20px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.va-mod-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.va-lcd{background:#06111F;border:1px solid #24406B;border-radius:12px;padding:10px 12px;display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
+.va-lcd b{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:30px;color:#FFB627;line-height:1.1}
+.va-lcd span{font-family:'JetBrains Mono',monospace;font-size:14px;color:#9FB3D3}
+.va-ctrl{display:flex;align-items:center;gap:10px}
+.va-step{width:44px;height:44px;flex:none;border-radius:50%;border:2px solid #2E5287;background:#1A3358;color:#fff;font-size:22px;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center}
+.va-step:hover{background:#23467A}
+.va-track{flex:1;height:6px;border-radius:999px;background:#0B1F3A;overflow:hidden}
+.va-track i{display:block;height:6px;border-radius:999px;background:#4C8DFF}
+.va-types{display:flex;justify-content:space-around;gap:8px;padding-top:2px}
+.va-types>div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.va-types small{font-size:12px;color:#A9BCD9}
+.va-round{width:52px;height:52px;border-radius:50%;padding:0;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;background:#18325A;color:#DCE6F5;border:2px solid #2A4B7C;box-shadow:0 4px 0 #06111F}
+.va-round[aria-pressed="true"]{background:#F2A900;color:#0B1F3A;border-color:#F2A900;box-shadow:0 4px 0 #9A6B00}
+.va-legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;color:#A9BCD9;margin-top:-6px}
+.va-legend span,.vb-legend span{display:inline-flex;align-items:center;gap:6px}
+.va-legend i,.vb-legend i{width:14px;height:6px;border-radius:3px;display:inline-block}
+.va-power{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:58px;color:#FFB627;line-height:1;text-align:center}
+.va-power span{font-size:22px;color:#A9BCD9;margin-left:8px}
+.va-chip{display:inline-flex;padding:7px 14px;border-radius:999px;font-weight:700;font-size:15px;background:#F2A900;color:#0B1F3A}
+[data-tone="within"] .va-chip{background:#4C8DFF}
+.va-sent{color:#C6D3E8;font-size:15px;margin:10px 0 0}
+.va-cmp{background:#0B1F3A;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.va-cmp-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.va-delta{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#FFB627}
+.va-bars{display:grid;grid-template-columns:96px minmax(0,1fr) 72px;gap:10px;align-items:center;font-size:14px;color:#DCE6F5}
+.va-bars .t{height:12px;border-radius:999px;background:#1A3358;overflow:hidden}
+.va-bars .t i{display:block;height:12px;border-radius:999px}
+.va-bars .v{font-family:'JetBrains Mono',monospace;text-align:right}
+.va-foot,.vb-foot{margin:0;font-size:14px;color:#44597A;max-width:860px}
 
-    header {
-      background: var(--ink);
-      color: var(--paper);
-      padding: 14px max(20px, calc((100vw - 1060px) / 2));
-      font-size: 15px;
-      font-weight: 650;
-    }
+/* ---------- B · Test bench ---------- */
+.vb{background:#F3F6FA;color:#0B1F3A;font-family:Inter,system-ui,sans-serif;padding:24px 24px 44px;min-height:100vh}
+.vb a{color:#0B1F3A;text-decoration:none}.vb a:hover{color:#1F5FD1}
+.vb-wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.vb-head{background:#fff;border-radius:22px;padding:14px 22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.vb-brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.vb-logo{width:40px;height:40px;border-radius:50%;background:#DCE8FB;display:flex;align-items:center;justify-content:center}
+.vb-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px}
+.vb-tag{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:#FFF1CC;color:#6B4300}
+.vb-nav{display:flex;flex-wrap:wrap;gap:22px;font-weight:500;font-size:15px}
+.vb-nav .on{font-weight:700}
+.vb h1{margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;letter-spacing:-.01em}
+.vb-lede{margin:6px 0 0;font-size:17px;color:#44597A;max-width:720px}
+.vb-row{display:flex;flex-wrap:wrap;gap:20px}
+.vb-stage{flex:999 1 600px;min-width:0;background:#DCE8FB;border-radius:32px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.vb-stage-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.vb-seg{display:flex;flex-wrap:wrap;gap:4px;padding:5px;background:#fff;border-radius:999px}
+.vb-seg button{min-height:44px;padding:0 18px;border-radius:999px;border:none;font-weight:600;font-size:15px;background:#fff;color:#13294B}
+.vb-seg button[aria-pressed="true"]{background:#0B1F3A;color:#fff}
+.vb-pills{display:flex;flex-wrap:wrap;gap:10px}
+.vb-pills span{background:#fff;border-radius:999px;padding:8px 14px;font-size:14px}
+.vb-result{flex:1 1 380px;min-width:0;background:#fff;border-radius:32px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.vb-result h2{margin:0;font-weight:600;font-size:15px;color:#44597A}
+.vb-legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;color:#44597A;margin-top:-6px}
+.vb-out{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.vb-power{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:64px;line-height:1}
+.vb-power span{font-size:26px;color:#44597A;margin-left:6px}
+.vb-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-weight:700;font-size:15px;background:#FFF1CC;color:#6B4300}
+.vb-chip i{width:8px;height:8px;border-radius:50%;background:#F2A900}
+[data-tone="within"] .vb-chip{background:#DCE8FB;color:#13294B}
+[data-tone="within"] .vb-chip i{background:#1F5FD1}
+.vb-sent{margin:0;font-size:15px;color:#44597A}
+.vb-cmp{border-top:1.5px solid #E3EAF4;padding-top:16px;display:flex;flex-direction:column;gap:8px}
+.vb-cmp-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.vb-cmp h3{margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
+.vb-delta{font-weight:700;font-size:15px;padding:3px 10px;border-radius:999px;background:#FFF1CC;color:#6B4300}
+.vb-lbl{display:flex;justify-content:space-between;font-size:14px}
+.vb-t{height:14px;border-radius:999px;background:#EEF2F8;overflow:hidden;margin-bottom:4px}
+.vb-t i{display:block;height:14px;border-radius:999px}
+.vb-read{background:#fff;border-radius:32px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.vb-read-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px}
+.vb-read h2{margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px}
+.vb-hint{font-size:14px;color:#44597A}
+.vb-hint b{color:#6B4300;font-weight:600}
+.vb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.vb-ch{background:#F3F6FA;border-radius:24px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:12px;border-top:6px solid #C9D6EA}
+.vb-ch.used{border-top-color:#F2A900}
+.vb-ch label,.vb-ch .lbl{font-weight:600;font-size:14px;text-align:center;min-height:36px;display:flex;align-items:center}
+.vb-num{width:100%;border:1.5px solid #C9D6EA;border-radius:12px;background:#fff;color:#0B1F3A;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;padding:6px 10px;text-align:center}
+.vb-unit{font-size:13px;color:#44597A;margin-top:-6px}
+.vb-fwrap{display:flex;align-items:stretch;gap:8px}
+.vb-fader{writing-mode:vertical-lr;direction:rtl;width:44px;height:170px;margin:0;accent-color:#1F5FD1;cursor:pointer}
+.vb-scale{display:flex;flex-direction:column;justify-content:space-between;font-size:12px;color:#44597A;padding:4px 0}
+.vb-type{width:100%;min-height:52px;border-radius:16px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:600;background:#fff;color:#13294B;border:1.5px solid #C9D6EA}
+.vb-type b{font-family:'Space Grotesk',sans-serif;font-size:22px}
+.vb-type[aria-pressed="true"]{background:#0B1F3A;color:#fff;border-color:#0B1F3A}
 
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 22px 20px 32px;
-    }
-
-    .hero {
-      position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 24px;
-      border-radius: 12px;
-      background: var(--amber);
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      z-index: -1;
-      inset: 0 0 0 65%;
-      background-image:
-        linear-gradient(#704a1720 1px, transparent 1px),
-        linear-gradient(90deg, #704a1720 1px, transparent 1px);
-      background-size: 19px 19px;
-    }
-
-    .hero canvas {
-      width: 132px;
-      height: auto;
-      flex-shrink: 0;
-      filter: drop-shadow(0 6px 3px #53391730);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(30px, 5vw, 54px);
-      letter-spacing: -.065em;
-      line-height: 1.06;
-    }
-
-    h2 { margin: 0 0 16px; font-size: 21px; }
-    p { margin: 7px 0; line-height: 1.45; }
-
-    .bench {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
-      gap: 16px;
-      margin-top: 16px;
-      align-items: start;
-    }
-
-    form, aside {
-      min-width: 0;
-      padding: 22px;
-      border-radius: 12px;
-      box-shadow: 0 12px 28px #17243a17;
-    }
-
-    form {
-      border: 1px solid var(--line);
-      background: var(--cream);
-    }
-
-    form h2 { font-size: 25px; letter-spacing: -.035em; }
-
-    .tools {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-      padding: 12px;
-      margin-bottom: 18px;
-      background: #e9e3d6;
-      border-radius: 9px;
-    }
-
-    .tools strong {
-      grid-column: 1 / -1;
-      font-size: 13px;
-    }
-
-    button {
-      padding: 8px 10px;
-      border: 1px solid #aebbd0;
-      border-radius: 6px;
-      background: white;
-      color: #18365c;
-      font: 650 14px system-ui, sans-serif;
-      cursor: pointer;
-      transition: background-color .18s, transform .18s;
-    }
-
-    button:hover { background: #e5edf9; }
-    button:active { transform: translateY(2px); }
-
-    .tools button {
-      text-align: left;
-      font-size: 13px;
-    }
-
-    .tools button span {
-      display: block;
-      margin-top: 4px;
-      font: 12px ui-monospace, monospace;
-    }
-
-    .tools button[aria-pressed="true"] {
-      background: var(--amber);
-      color: #262015;
-      border-color: #ad7830;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-
-    button[type="submit"] {
-      background: #183a70;
-      border-color: #183a70;
-      color: white;
-    }
-
-    button[type="submit"]:hover { background: #24508e; }
-
-    fieldset {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      min-width: 0;
-      margin: 0 0 16px;
-      padding: 0;
-      border: 0;
-    }
-
-    legend {
-      width: 100%;
-      padding: 0 0 6px;
-      margin-bottom: 7px;
-      border-bottom: 1px solid #d8cdb7;
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    label {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      gap: 5px;
-      padding: 9px;
-      background: #f2eee4;
-      border-radius: 7px;
-      font-size: 12px;
-      font-weight: 650;
-    }
-
-    input, select {
-      width: 100%;
-      min-width: 0;
-      padding: 7px;
-      border: 1px solid #3b5071;
-      border-radius: 5px;
-      background: #1c2d47;
-      color: #fff4da;
-      color-scheme: dark;
-      font: 600 18px ui-monospace, monospace;
-    }
-
-    :focus-visible {
-      outline: 2px solid #b17822;
-      outline-offset: 2px;
-    }
-
-    aside {
-      background: var(--navy);
-      border: 1px solid #344b6d;
-      color: white;
-    }
-
-    aside h2 { color: var(--light-blue); }
-
-    .dial {
-      --angle: -120deg;
-      position: relative;
-      width: min(176px, 100%);
-      aspect-ratio: 1;
-      margin: 22px auto 18px;
-      border: 1px solid #536a88;
-      border-radius: 50%;
-      background: repeating-conic-gradient(
-        #7890af 0deg 2deg,
-        transparent 2deg 30deg
-      );
-      box-shadow: inset 0 0 0 3px #253955, 0 0 0 6px #0f1d31;
-    }
-
-    .dial::before, .dial::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-    }
-
-    .dial::before { inset: 8px; background: var(--navy); }
-    .dial::after { inset: calc(50% - 5px); background: #ffd180; }
-
-    .needle {
-      position: absolute;
-      left: calc(50% - 2px);
-      bottom: 50%;
-      height: 38%;
-      width: 4px;
-      border-radius: 4px;
-      background: #ffd180;
-      transform-origin: bottom;
-      transform: rotate(var(--angle));
-      transition: transform .75s cubic-bezier(.22, .8, .24, 1);
-    }
-
-    .result {
-      padding-bottom: 15px;
-      border-bottom: 1px solid #526784;
-    }
-
-    .result[data-state="flagged"] #status { color: #ffd180; }
-
-    .power-value {
-      margin: 0 0 5px;
-      overflow-wrap: anywhere;
-      font: 700 clamp(28px, 5vw, 46px)/1.15 ui-monospace, monospace;
-    }
-
-    .demo-limit, small {
-      color: var(--light-blue);
-      font-size: 13px;
-    }
-
-    small { display: block; margin-top: 12px; line-height: 1.5; }
-
-    .range {
-      margin-top: 16px;
-      padding: 13px;
-      border-radius: 8px;
-      background: var(--blue);
-    }
-
-    .track {
-      position: relative;
-      height: 11px;
-      margin-top: 9px;
-      border-radius: 3px;
-      background: #51617a;
-    }
-
-    .band {
-      position: absolute;
-      inset: 0 25% 0 29.1667%;
-      background: #97b9f3;
-    }
-
-    .marker {
-      position: absolute;
-      left: 0;
-      top: -3px;
-      width: 3px;
-      height: 17px;
-      background: #ffcd70;
-      transform: translateX(-50%);
-      transition: left .65s cubic-bezier(.22, .8, .24, 1);
-    }
-
-    .scale {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 6px;
-      color: var(--light-blue);
-      font-size: 12px;
-    }
-
-    .comparison {
-      margin-top: 16px;
-      padding: 9px 0;
-      border-block: 1px solid #526784;
-    }
-
-    .comparison summary { cursor: pointer; font-weight: 650; }
-
-    .comparison dl {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 7px;
-      margin: 9px 0 0;
-      font-size: 14px;
-    }
-
-    .comparison dd { margin: 0; text-align: right; }
-
-    @media (max-width: 700px) {
-      .bench { grid-template-columns: 1fr; }
-      .hero canvas { width: 83px; }
-    }
-
-    @media (max-width: 380px) {
-      fieldset, .tools { grid-template-columns: 1fr; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .needle, .marker, button { transition: none; }
-    }
-  </style>
+/* ---------- C · Labelled machine ---------- */
+.vc{background:#0A1A33;color:#DCE6F5;font-family:'IBM Plex Sans',system-ui,sans-serif;padding:24px 24px 44px;min-height:100vh}
+.vc a{color:#DCE6F5;text-decoration:none}.vc a:hover{color:#FFB627}
+.vc-wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.vc-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;border-bottom:1.5px solid #1F3A66;padding-bottom:18px}
+.vc-brand{display:flex;align-items:center;gap:12px}
+.vc-logo{width:42px;height:42px;border-radius:12px;border:2px solid #F2A900;display:flex;align-items:center;justify-content:center}
+.vc-name{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:19px;letter-spacing:.02em;color:#fff}
+.vc-sub{font-size:13px;color:#A9BCD9}
+.vc-nav{display:flex;flex-wrap:wrap;gap:22px;font-weight:500;font-size:15px}
+.vc-nav .on{color:#FFB627}
+.vc-main{display:flex;flex-wrap:wrap;gap:24px}
+.vc-left{flex:999 1 640px;min-width:0;display:flex;flex-direction:column}
+.vc-right{flex:1 1 380px;min-width:0}
+.vc-tabs{display:flex;flex-wrap:wrap;gap:4px;padding-left:4px}
+.vc-tab{min-height:48px;padding:0 20px;border:none;border-radius:16px 16px 0 0;background:#0F2140;color:#A9BCD9;font-weight:600;font-size:15px;border-top:3px solid transparent;text-align:left}
+.vc-tab small{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;opacity:.85}
+.vc-tab[aria-pressed="true"]{background:#12284A;color:#fff;border-top-color:#F2A900}
+.vc-board{background:#12284A;border-radius:0 28px 28px 28px;padding:18px}
+.vc-stage{position:relative;aspect-ratio:8/5}
+.vc-art{position:absolute;inset:0;width:100%;height:100%}
+.vc-co{position:absolute;width:22%;background:#0A1A33;border:1.5px solid #3B6FB6;border-radius:14px;padding:9px 11px;display:flex;flex-direction:column;gap:4px}
+.vc-co.used{border-color:#F2A900}
+.vc-co label,.vc-co .lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A9BCD9}
+.vc-co.used label{color:#FFC54D}
+.vc-in{display:flex;align-items:baseline;gap:6px;border-bottom:1.5px solid #2A4B7C}
+.vc-in input{width:100%;min-width:0;background:transparent;border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:22px;padding:2px 0;min-height:36px}
+.vc-in span{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#A9BCD9}
+.vc-co small{font-size:12px;color:#A9BCD9}
+.vc-air{left:1.5%;top:6%}
+.vc-proc{left:52%;top:3%}
+.vc-speed{left:76%;top:20%}
+.vc-torque{left:76%;top:70%}
+.vc-wear{left:1.5%;top:70%}
+.vc-plate{left:39.5%;top:48.5%;width:20.5%;background:#F2A900;border:none;color:#0B1F3A;align-items:center;padding:8px}
+.vc-plate .lbl{color:#0B1F3A}
+.vc-plate div{display:flex;gap:6px}
+.vc-plate button{width:44px;height:44px;border-radius:50%;padding:0;border:2px solid #0B1F3A;background:transparent;color:#0B1F3A;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:17px}
+.vc-plate button[aria-pressed="true"]{background:#0B1F3A;color:#FFB627}
+.vc-note{margin:14px 4px 0;font-size:14px;color:#A9BCD9}
+.vc-note b{color:#FFC54D;font-weight:600}
+.vc-card{position:relative;background:#FFF8E8;color:#0B1F3A;border:3px solid #F2A900;border-radius:26px;padding:28px 26px 24px;display:flex;flex-direction:column;gap:14px}
+.vc-rivet{position:absolute;width:10px;height:10px;border-radius:50%;background:#C9A24A}
+.vc-card h2{margin:0;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.14em;text-align:center}
+.vc-power{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:56px;line-height:1;text-align:center}
+.vc-power span{font-size:22px;margin-left:6px;color:#44597A}
+.vc-chip{align-self:center;display:inline-flex;padding:7px 14px;border-radius:999px;background:#0B1F3A;color:#FFB627;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+[data-tone="within"] .vc-chip{color:#8FB8FF}
+.vc-sent{margin:0;text-align:center;font-size:15px;color:#3A4E6E}
+.vc-ledger{border-top:2px dashed #E2C98A;padding-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:15px}
+.vc-ledger h3{grid-column:1/-1;margin:0 0 2px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.14em}
+.vc-ledger b{font-family:'IBM Plex Mono',monospace;text-align:right}
+.vc-ledger .d{font-weight:700}
+.vc-foot{margin:0;font-size:14px;color:#A9BCD9;max-width:860px}
+@media (max-width:1000px){
+  .vc-stage{aspect-ratio:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .vc-art{position:static;grid-column:1/-1;height:auto}
+  .vc-lines{display:none}
+  .vc-co{position:static;width:auto}
+  .vc-plate{width:auto}
+}
+</style>
 </head>
 <body>
-  <header>Predictive Equipment Failure Detection</header>
 
-  <main>
-    <section class="hero">
-      <div>
-        <h1>Motor test bench</h1>
-        <p>Enter motor readings or load a sample.</p>
-      </div>
-      <canvas id="motor" width="340" height="260" role="img"
-        aria-label="Blue industrial electric motor illustration"></canvas>
-    </section>
+<nav class="switcher" aria-label="Design direction">
+  <strong>Design direction</strong>
+  <div class="pills">
+    <button type="button" data-view="a" aria-pressed="true">A · Control panel</button>
+    <button type="button" data-view="b" aria-pressed="false">B · Test bench</button>
+    <button type="button" data-view="c" aria-pressed="false">C · Labelled machine</button>
+  </div>
+</nav>
 
-    <div class="bench">
-      <form id="inspection">
-        <h2>Equipment readings</h2>
-
-        <div class="tools">
-          <strong>Load sample</strong>
-          <button type="button" data-torque="42.8" aria-pressed="false">
-            Baseline <span>42.8 N·m</span>
-          </button>
-          <button type="button" data-torque="15" aria-pressed="false">
-            Low torque <span>15 N·m</span>
-          </button>
-          <button type="button" data-torque="65" aria-pressed="false">
-            High torque <span>65 N·m</span>
-          </button>
-        </div>
-
-        <fieldset>
-          <legend>Temperature</legend>
-          <label>
-            Air temperature (K)
-            <input name="air" type="number" min="0.1" step="any" value="298.1" required>
-          </label>
-          <label>
-            Process temperature (K)
-            <input name="process" type="number" min="0.1" step="any" value="308.6" required>
-          </label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Machine operation</legend>
-          <label>
-            Rotational speed (rpm)
-            <input name="speed" type="number" min="0" step="1" value="1551" required>
-          </label>
-          <label>
-            Torque (N·m)
-            <input name="torque" type="number" min="0" step="any" value="42.8" required>
-          </label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Tool and product</legend>
-          <label>
-            Tool wear (min)
-            <input name="wear" type="number" min="0" step="1" value="0" required>
-          </label>
-          <label>
-            Product type
-            <select name="type">
-              <option>L</option>
-              <option selected>M</option>
-              <option>H</option>
-            </select>
-          </label>
-        </fieldset>
-
-        <div class="actions">
-          <button type="submit">Check conditions</button>
-          <button type="reset">Reset sample</button>
-        </div>
-      </form>
-
-      <aside>
-        <h2>Inspection result</h2>
-        <div class="dial" id="dial" aria-hidden="true">
-          <span class="needle"></span>
-        </div>
-
-        <div class="result" id="result" data-state="ready" role="status">
-          <p class="power-value" id="power-value" hidden></p>
-          <strong id="status">No inspection run yet</strong>
-          <p id="instruction">Load a sample or enter your readings and click Check conditions.</p>
-          <p class="demo-limit" id="demo-limit" hidden>Demo range: 3,500–9,000 W</p>
-        </div>
-
-        <div class="range" id="range" hidden aria-hidden="true">
-          <strong>Estimated mechanical power</strong>
-          <div class="track">
-            <span class="band"></span>
-            <span class="marker" id="marker"></span>
-          </div>
-          <div class="scale"><span>0 W</span><span>12,000+ W</span></div>
-        </div>
-
-        <details class="comparison" id="comparison" hidden>
-          <summary>Compare with baseline</summary>
-          <dl>
-            <dt>Torque change</dt><dd id="torque-delta"></dd>
-            <dt>Speed change</dt><dd id="speed-delta"></dd>
-            <dt>Estimated power change</dt><dd id="power-delta"></dd>
-          </dl>
-        </details>
-
-        <small>This demo estimates power from speed and torque. A future trained model will use all six inputs.</small>
-      </aside>
+<!-- =============== A · CONTROL PANEL =============== -->
+<main class="view va" id="view-a">
+<div class="va-wrap">
+  <header class="va-head">
+    <div class="va-brand">
+      <div class="va-logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="#F2A900" stroke-width="2.5"/><line x1="13" y1="13" x2="18" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+      <div><div class="va-name">[PROJECT NAME]</div><div class="va-sub">Motor reading check · prototype</div></div>
     </div>
-  </main>
+    <nav class="va-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+  </header>
 
-  <script>
-    const form = document.querySelector('#inspection');
-    const scenarioButtons = form.querySelectorAll('[data-torque]');
-    const result = document.querySelector('#result');
-    const statusText = document.querySelector('#status');
-    const powerValue = document.querySelector('#power-value');
-    const instruction = document.querySelector('#instruction');
-    const demoLimit = document.querySelector('#demo-limit');
-    const dial = document.querySelector('#dial');
-    const range = document.querySelector('#range');
-    const marker = document.querySelector('#marker');
-    const comparison = document.querySelector('#comparison');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  <section class="va-console" aria-label="Motor check console">
+    <div class="va-left">
+      <div class="va-row">
+        <div class="va-tile" style="flex:1 1 320px">
+          <div class="va-mod-top" style="flex-wrap:wrap">
+            <span class="va-eng">Unit 01 · Drive motor</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#DCE6F5"><span class="va-led amber"></span><span data-text="f_speed"></span> rpm</span>
+          </div>
+          <svg viewBox="0 0 320 190" width="100%" role="img" aria-label="Side view of an electric motor" style="max-height:200px;display:block">
+            <rect x="40" y="166" width="196" height="12" rx="6" fill="#0B1F3A"/>
+            <rect x="64" y="148" width="34" height="22" rx="5" fill="#1F3D6B"/><rect x="176" y="148" width="34" height="22" rx="5" fill="#1F3D6B"/>
+            <rect x="22" y="62" width="34" height="88" rx="14" fill="#1F3D6B"/>
+            <rect x="46" y="48" width="180" height="110" rx="24" fill="#2A4B7C"/>
+            <g stroke="#1A3358" stroke-width="4" stroke-linecap="round"><line x1="66" y1="60" x2="66" y2="146"/><line x1="86" y1="60" x2="86" y2="146"/><line x1="106" y1="60" x2="106" y2="146"/><line x1="126" y1="60" x2="126" y2="146"/><line x1="146" y1="60" x2="146" y2="146"/><line x1="166" y1="60" x2="166" y2="146"/><line x1="186" y1="60" x2="186" y2="146"/><line x1="206" y1="60" x2="206" y2="146"/></g>
+            <rect x="104" y="22" width="66" height="30" rx="8" fill="#1F3D6B"/>
+            <rect x="100" y="82" width="74" height="42" rx="7" fill="#F2A900"/>
+            <text x="137" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#0B1F3A" data-text="typeLabel"></text>
+            <text x="137" y="115" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" font-weight="500" fill="#0B1F3A" data-text="rpmLabel"></text>
+            <rect x="220" y="64" width="34" height="80" rx="14" fill="#1F3D6B"/>
+            <rect x="252" y="92" width="58" height="24" rx="7" fill="#A9BCD9"/>
+            <line class="shaft" data-shaft x1="256" y1="104" x2="306" y2="104" stroke="#0B1F3A" stroke-width="3" stroke-dasharray="7 7"/>
+          </svg>
+        </div>
+        <div class="va-tile" style="flex:1 1 250px;padding:18px" role="group" aria-label="Load sample">
+          <span class="va-eng">Load sample</span>
+          <button type="button" class="va-key" data-sample="baseline"><span class="va-led"></span><span><b>Baseline</b><small>1,538 rpm · 40.0 N·m</small></span></button>
+          <button type="button" class="va-key" data-sample="low"><span class="va-led"></span><span><b>Low torque</b><small>1,817 rpm · 12.8 N·m</small></span></button>
+          <button type="button" class="va-key" data-sample="high"><span class="va-led"></span><span><b>High torque</b><small>1,320 rpm · 65.0 N·m</small></span></button>
+        </div>
+      </div>
 
-    const baselineSpeed = Number(form.elements.speed.defaultValue);
-    const baselineTorque = Number(form.elements.torque.defaultValue);
-    const minPower = 3500;
-    const maxPower = 9000;
-    const gaugeMax = 12000;
-    let resultAnimation;
+      <div class="va-mod-top" style="flex-wrap:wrap">
+        <h2 class="va-eng" style="font-size:15px">Equipment readings</h2>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#A9BCD9"><span class="va-led amber" style="width:8px;height:8px"></span>Used by the demo estimate · Loaded: <span data-text="sampleLabel"></span></span>
+      </div>
 
-    function estimatePower(speed, torque) {
-      return speed / 60 * (2 * Math.PI) * torque;
+      <div class="va-grid" id="va-grid"></div>
+    </div>
+
+    <div class="va-right">
+      <span class="va-eng" style="text-align:center">Estimated mechanical power</span>
+      <div data-dial="a" style="max-width:340px;width:100%;margin:0 auto"></div>
+      <div class="va-legend"><span><i style="background:#4C8DFF"></i>Demo range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
+      <div style="text-align:center" aria-live="polite">
+        <div class="va-power"><span data-text="power" style="font-size:inherit;color:inherit;margin:0"></span><span>W</span></div>
+        <div style="margin-top:14px"><span class="va-chip" data-text="status"></span></div>
+        <p class="va-sent" data-text="sentence"></p>
+      </div>
+      <div class="va-cmp">
+        <div class="va-cmp-head"><h3 class="va-eng">Compare with baseline</h3><span class="va-delta"><span data-text="diff"></span> (<span data-text="pct"></span>)</span></div>
+        <div class="va-bars">
+          <span>Baseline</span><div class="t"><i class="bar-fill" data-bar="base" style="background:#7F98BF"></i></div><span class="v"><span data-text="base"></span> W</span>
+          <span>This reading</span><div class="t"><i class="bar-fill" data-bar="cur" style="background:#F2A900"></i></div><span class="v"><span data-text="power"></span> W</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="va-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+</div>
+</main>
+
+<!-- =============== B · TEST BENCH =============== -->
+<main class="view vb" id="view-b" hidden>
+<div class="vb-wrap">
+  <header class="vb-head">
+    <div class="vb-brand">
+      <div class="vb-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16 A8 8 0 0 1 20 16" fill="none" stroke="#1F5FD1" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16" x2="8" y2="10" stroke="#0B1F3A" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+      <span class="vb-name">[PROJECT NAME]</span><span class="vb-tag">Prototype</span>
+    </div>
+    <nav class="vb-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+  </header>
+
+  <div>
+    <h1>Put the motor on the bench</h1>
+    <p class="vb-lede">Load a sample or slide the faders, then read the dial. The demo estimates mechanical power from speed and torque.</p>
+  </div>
+
+  <div class="vb-row">
+    <div class="vb-stage">
+      <div class="vb-stage-top">
+        <span style="font-weight:600;font-size:15px;color:#13294B">Sample on the bench</span>
+        <div class="vb-seg" role="group" aria-label="Load sample">
+          <button type="button" data-sample="baseline">Baseline</button>
+          <button type="button" data-sample="low">Low torque</button>
+          <button type="button" data-sample="high">High torque</button>
+        </div>
+      </div>
+      <svg viewBox="0 0 520 280" width="100%" role="img" aria-label="Electric motor on a test bench" style="display:block;max-height:330px">
+        <rect x="20" y="246" width="480" height="18" rx="9" fill="#B9CDEB"/>
+        <rect x="80" y="214" width="56" height="36" rx="8" fill="#13294B"/><rect x="280" y="214" width="56" height="36" rx="8" fill="#13294B"/>
+        <rect x="40" y="86" width="52" height="130" rx="20" fill="#2A4B7C"/>
+        <rect x="74" y="64" width="290" height="166" rx="36" fill="#13294B"/>
+        <g stroke="#2A4B7C" stroke-width="6" stroke-linecap="round"><line x1="106" y1="80" x2="106" y2="214"/><line x1="136" y1="80" x2="136" y2="214"/><line x1="166" y1="80" x2="166" y2="214"/><line x1="196" y1="80" x2="196" y2="214"/><line x1="226" y1="80" x2="226" y2="214"/><line x1="256" y1="80" x2="256" y2="214"/><line x1="286" y1="80" x2="286" y2="214"/><line x1="316" y1="80" x2="316" y2="214"/></g>
+        <rect x="164" y="26" width="110" height="44" rx="12" fill="#2A4B7C"/>
+        <rect x="160" y="118" width="116" height="58" rx="10" fill="#fff"/>
+        <text x="218" y="143" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="700" fill="#0B1F3A" data-text="typeLabel"></text>
+        <text x="218" y="163" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="500" fill="#44597A" data-text="rpmLabel"></text>
+        <rect x="354" y="92" width="50" height="118" rx="20" fill="#2A4B7C"/>
+        <rect x="400" y="134" width="96" height="34" rx="10" fill="#F2A900"/>
+        <line class="shaft" data-shaft x1="406" y1="151" x2="490" y2="151" stroke="#0B1F3A" stroke-width="4" stroke-dasharray="7 7"/>
+      </svg>
+      <div class="vb-pills">
+        <span><strong data-text="f_speed"></strong> rpm</span>
+        <span><strong data-text="f_torque"></strong> N·m</span>
+        <span>Loaded: <strong data-text="sampleLabel"></strong></span>
+      </div>
+    </div>
+
+    <div class="vb-result">
+      <h2>Estimated mechanical power</h2>
+      <div data-dial="b" style="max-width:330px;width:100%;margin:0 auto"></div>
+      <div class="vb-legend"><span><i style="background:#1F5FD1"></i>Demo range 3,500–8,500 W</span><span><i style="background:#F2A900"></i>Outside range</span></div>
+      <div class="vb-out" aria-live="polite">
+        <div class="vb-power"><span data-text="power" style="font-size:inherit;color:inherit;margin:0"></span><span>W</span></div>
+        <span class="vb-chip"><i></i><span data-text="status"></span></span>
+        <p class="vb-sent" data-text="sentence"></p>
+      </div>
+      <div class="vb-cmp">
+        <div class="vb-cmp-head"><h3>Compare with baseline</h3><span class="vb-delta"><span data-text="diff"></span> · <span data-text="pct"></span></span></div>
+        <div class="vb-lbl"><span>Baseline</span><strong><span data-text="base"></span> W</strong></div>
+        <div class="vb-t"><i class="bar-fill" data-bar="base" style="background:#8FB0E6"></i></div>
+        <div class="vb-lbl"><span>This reading</span><strong><span data-text="power"></span> W</strong></div>
+        <div class="vb-t"><i class="bar-fill" data-bar="cur" style="background:#F2A900"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="vb-read" aria-labelledby="vb-readings">
+    <div class="vb-read-head">
+      <h2 id="vb-readings">Equipment readings</h2>
+      <span class="vb-hint">Drag a fader or type a value · <b>amber caps</b> feed the demo estimate</span>
+    </div>
+    <div class="vb-grid" id="vb-grid"></div>
+  </section>
+  <p class="vb-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+</div>
+</main>
+
+<!-- =============== C · LABELLED MACHINE =============== -->
+<main class="view vc" id="view-c" hidden>
+<div class="vc-wrap">
+  <header class="vc-head">
+    <div class="vc-brand">
+      <div class="vc-logo"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="14" height="10" rx="3" fill="none" stroke="#DCE6F5" stroke-width="2"/><line x1="17" y1="12" x2="22" y2="12" stroke="#F2A900" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+      <div><div class="vc-name">[PROJECT NAME]</div><div class="vc-sub">Motor reading check · prototype</div></div>
+    </div>
+    <nav class="vc-nav" aria-label="Main"><a href="#" class="on">Check readings</a><a href="#">How it works</a><a href="#">About the model</a></nav>
+  </header>
+
+  <div class="vc-main">
+    <div class="vc-left">
+      <div class="vc-tabs" role="group" aria-label="Load sample">
+        <button type="button" class="vc-tab" data-sample="baseline">Baseline<small>1,538 rpm · 40.0 N·m</small></button>
+        <button type="button" class="vc-tab" data-sample="low">Low torque<small>1,817 rpm · 12.8 N·m</small></button>
+        <button type="button" class="vc-tab" data-sample="high">High torque<small>1,320 rpm · 65.0 N·m</small></button>
+      </div>
+      <div class="vc-board">
+        <div class="vc-stage">
+          <svg class="vc-art" viewBox="0 0 800 500" role="img" aria-label="Electric motor with each reading pinned to the part it comes from">
+            <rect x="200" y="392" width="390" height="22" rx="11" fill="#0A1A33" stroke="#3B6FB6" stroke-width="2"/>
+            <rect x="232" y="364" width="62" height="32" rx="8" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <rect x="486" y="364" width="62" height="32" rx="8" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <rect x="170" y="200" width="62" height="160" rx="24" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <g stroke="#2A4B7C" stroke-width="2"><line x1="182" y1="222" x2="220" y2="222"/><line x1="182" y1="246" x2="220" y2="246"/><line x1="182" y1="270" x2="220" y2="270"/><line x1="182" y1="294" x2="220" y2="294"/><line x1="182" y1="318" x2="220" y2="318"/><line x1="182" y1="342" x2="220" y2="342"/></g>
+            <rect x="220" y="180" width="340" height="200" rx="38" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <g stroke="#2A4B7C" stroke-width="6" stroke-linecap="round"><line x1="252" y1="196" x2="252" y2="364"/><line x1="282" y1="196" x2="282" y2="364"/><line x1="312" y1="196" x2="312" y2="364"/><line x1="342" y1="196" x2="342" y2="364"/><line x1="372" y1="196" x2="372" y2="364"/><line x1="402" y1="196" x2="402" y2="364"/><line x1="432" y1="196" x2="432" y2="364"/><line x1="462" y1="196" x2="462" y2="364"/><line x1="492" y1="196" x2="492" y2="364"/><line x1="522" y1="196" x2="522" y2="364"/></g>
+            <rect x="330" y="128" width="120" height="56" rx="10" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <rect x="550" y="204" width="62" height="152" rx="24" fill="#163463" stroke="#6F9BDB" stroke-width="2.5"/>
+            <rect x="610" y="262" width="120" height="36" rx="9" fill="#A9BCD9"/>
+            <line class="shaft" data-shaft x1="616" y1="280" x2="724" y2="280" stroke="#0A1A33" stroke-width="4" stroke-dasharray="7 7"/>
+            <rect x="680" y="248" width="34" height="64" rx="8" fill="#F2A900"/>
+            <g class="vc-lines" fill="none" stroke-width="2" stroke-dasharray="5 5">
+              <path d="M190 205 L110 128" stroke="#6F9BDB"/>
+              <path d="M430 130 L480 112" stroke="#6F9BDB"/>
+              <path d="M700 262 L700 196" stroke="#F2A900"/>
+              <path d="M697 312 L697 350" stroke="#F2A900"/>
+              <path d="M240 382 L150 352" stroke="#6F9BDB"/>
+              <circle cx="190" cy="205" r="5" fill="#6F9BDB" stroke="none"/>
+              <circle cx="430" cy="130" r="5" fill="#6F9BDB" stroke="none"/>
+              <circle cx="700" cy="262" r="5" fill="#F2A900" stroke="none"/>
+              <circle cx="697" cy="312" r="5" fill="#F2A900" stroke="none"/>
+              <circle cx="240" cy="382" r="5" fill="#6F9BDB" stroke="none"/>
+            </g>
+          </svg>
+          <div class="vc-co vc-air"><label for="c-air">Air temperature</label><div class="vc-in"><input id="c-air" type="number" step="0.1" data-input="air"><span>K</span></div><small>Ambient, at the fan</small></div>
+          <div class="vc-co vc-proc"><label for="c-proc">Process temperature</label><div class="vc-in"><input id="c-proc" type="number" step="0.1" data-input="proc"><span>K</span></div><small>Inside the process</small></div>
+          <div class="vc-co vc-speed used"><label for="c-speed">Rotational speed</label><div class="vc-in"><input id="c-speed" type="number" step="1" data-input="speed"><span>rpm</span></div><small>Measured at the shaft</small></div>
+          <div class="vc-co vc-torque used"><label for="c-torque">Torque</label><div class="vc-in"><input id="c-torque" type="number" step="0.1" data-input="torque"><span>N·m</span></div><small>Measured at the coupling</small></div>
+          <div class="vc-co vc-wear"><label for="c-wear">Tool wear</label><div class="vc-in"><input id="c-wear" type="number" step="1" data-input="wear"><span>min</span></div><small>Running time on the tool</small></div>
+          <div class="vc-co vc-plate" role="group" aria-label="Product type">
+            <span class="lbl">Product type</span>
+            <div><button type="button" data-type="L" aria-label="Low quality (L)">L</button><button type="button" data-type="M" aria-label="Medium quality (M)">M</button><button type="button" data-type="H" aria-label="High quality (H)">H</button></div>
+          </div>
+        </div>
+      </div>
+      <p class="vc-note">Each reading is pinned to the part of the machine it comes from. <b>Amber outlines</b> feed the demo estimate. Loaded: <span data-text="sampleLabel"></span></p>
+    </div>
+
+    <aside class="vc-right" aria-label="Result">
+      <div class="vc-card">
+        <span class="vc-rivet" style="top:12px;left:12px"></span><span class="vc-rivet" style="top:12px;right:12px"></span><span class="vc-rivet" style="bottom:12px;left:12px"></span><span class="vc-rivet" style="bottom:12px;right:12px"></span>
+        <h2>ESTIMATED MECHANICAL POWER</h2>
+        <div data-dial="c" style="max-width:300px;width:100%;margin:0 auto"></div>
+        <div aria-live="polite" style="display:flex;flex-direction:column;gap:12px">
+          <div class="vc-power"><span data-text="power" style="font-size:inherit;color:inherit;margin:0"></span><span>W</span></div>
+          <span class="vc-chip" data-text="status"></span>
+          <p class="vc-sent" data-text="sentence"></p>
+        </div>
+        <div class="vc-ledger">
+          <h3>COMPARE WITH BASELINE</h3>
+          <span>Baseline</span><b><span data-text="base"></span> W</b>
+          <span>This reading</span><b><span data-text="power"></span> W</b>
+          <span class="d">Difference</span><b class="d"><span data-text="diff"></span> (<span data-text="pct"></span>)</b>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <p class="vc-foot">Demo estimate: power = torque × speed × 2π ÷ 60, compared with a 3,500–8,500 W demo range. It is not a failure prediction yet. The trained model will use all six readings.</p>
+</div>
+</main>
+
+<script>
+(function () {
+  // ---------- Data ----------
+  var SAMPLES = {
+    baseline: { air: 298.1, proc: 308.6, speed: 1538, torque: 40.0, wear: 0,   type: 'M', label: 'Baseline' },
+    low:      { air: 298.9, proc: 309.1, speed: 1817, torque: 12.8, wear: 21,  type: 'M', label: 'Low torque' },
+    high:     { air: 298.4, proc: 308.3, speed: 1320, torque: 65.0, wear: 108, type: 'L', label: 'High torque' }
+  };
+  var FIELDS = [
+    { key: 'air',    label: 'Air temperature',     unit: 'K',   step: 0.1, min: 295,  max: 305,  dec: 1, used: false },
+    { key: 'proc',   label: 'Process temperature', unit: 'K',   step: 0.1, min: 305,  max: 315,  dec: 1, used: false },
+    { key: 'speed',  label: 'Rotational speed',    unit: 'rpm', step: 10,  min: 1100, max: 2900, dec: 0, used: true },
+    { key: 'torque', label: 'Torque',              unit: 'N·m', step: 0.5, min: 3,    max: 77,   dec: 1, used: true },
+    { key: 'wear',   label: 'Tool wear',           unit: 'min', step: 1,   min: 0,    max: 250,  dec: 0, used: false }
+  ];
+  var TYPES = [{ id: 'L', name: 'Low' }, { id: 'M', name: 'Medium' }, { id: 'H', name: 'High' }];
+  var LOW_W = 3500, HIGH_W = 8500, MAX_W = 12000;
+  var byKey = {}; FIELDS.forEach(function (f) { byKey[f.key] = f; });
+
+  var state = Object.assign({ sample: 'low' }, SAMPLES.low);
+  var ready = false;
+
+  function watts(speed, torque) { return speed * torque * 2 * Math.PI / 60; }
+  function fmt(n, dec) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+
+  // ---------- Dial ----------
+  function tickPath() {
+    var d = '';
+    for (var i = 0; i <= 12; i++) {
+      var a = (-120 + 20 * i) * Math.PI / 180, r1 = i % 3 === 0 ? 85 : 88, r2 = 94;
+      d += 'M' + (100 + r1 * Math.sin(a)).toFixed(2) + ' ' + (100 - r1 * Math.cos(a)).toFixed(2) +
+           'L' + (100 + r2 * Math.sin(a)).toFixed(2) + ' ' + (100 - r2 * Math.cos(a)).toFixed(2);
     }
+    return d;
+  }
+  var THEMES = {
+    a: { face: '#06111F', tick: '#5E7BA6', label: '#A9BCD9', band: '#4C8DFF', font: 'JetBrains Mono, monospace',
+         needle: '<line x1="100" y1="112" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round"/>', hub1: '#F2A900', hub2: '#0B1F3A' },
+    b: { face: '#F3F6FA', tick: '#8296B3', label: '#44597A', band: '#1F5FD1', font: 'Inter, sans-serif',
+         needle: '<path d="M97 104 L100 28 L103 104 Z" fill="#0B1F3A"/>', hub1: '#0B1F3A', hub2: '#F2A900' },
+    c: { face: '#0B1F3A', tick: '#6F9BDB', label: '#DCE6F5', band: '#4C8DFF', font: 'IBM Plex Mono, monospace',
+         needle: '<line x1="100" y1="112" x2="100" y2="30" stroke="#F2A900" stroke-width="3.5" stroke-linecap="round"/>', hub1: '#F2A900', hub2: '#0B1F3A' }
+  };
+  function dialSVG(t) {
+    return '<svg class="dial" viewBox="0 0 200 172" role="img" aria-label="Power dial">' +
+      '<circle cx="100" cy="100" r="99" fill="' + t.face + '"/>' +
+      '<path d="' + tickPath() + '" stroke="' + t.tick + '" stroke-width="1.6" stroke-linecap="round" fill="none"/>' +
+      '<path d="M30.72 140 A80 80 0 0 1 38.72 48.58" stroke="#F2A900" stroke-width="10" fill="none"/>' +
+      '<path d="M38.72 48.58 A80 80 0 0 1 161.28 48.58" stroke="' + t.band + '" stroke-width="10" fill="none"/>' +
+      '<path d="M161.28 48.58 A80 80 0 0 1 169.28 140" stroke="#F2A900" stroke-width="10" fill="none"/>' +
+      '<g font-family="' + t.font + '" font-size="9" font-weight="600" fill="' + t.label + '" text-anchor="middle">' +
+        '<text x="50" y="132">0</text><text x="50" y="74">3k</text><text x="100" y="45">6k</text><text x="150" y="74">9k</text><text x="150" y="132">12k</text></g>' +
+      '<g class="needle" style="transform:rotate(-120deg)">' + t.needle + '</g>' +
+      '<circle cx="100" cy="100" r="9" fill="' + t.hub1 + '"/><circle cx="100" cy="100" r="3.5" fill="' + t.hub2 + '"/>' +
+    '</svg>';
+  }
+  document.querySelectorAll('[data-dial]').forEach(function (el) { el.innerHTML = dialSVG(THEMES[el.dataset.dial]); });
 
-    function selectScenario(selected) {
-      for (const button of scenarioButtons) {
-        button.setAttribute('aria-pressed', String(button === selected));
-      }
-    }
+  // ---------- Build A modules ----------
+  var vaGrid = document.getElementById('va-grid');
+  vaGrid.innerHTML = FIELDS.map(function (f) {
+    return '<div class="va-mod">' +
+      '<div class="va-mod-top"><span class="va-eng">' + f.label + '</span><span class="va-led' + (f.used ? ' amber' : '') + '" style="width:8px;height:8px"></span></div>' +
+      '<div class="va-lcd"><b data-text="f_' + f.key + '"></b><span>' + f.unit + '</span></div>' +
+      '<div class="va-ctrl">' +
+        '<button type="button" class="va-step" data-step="' + f.key + '" data-dir="-1" aria-label="Decrease ' + f.label + '">−</button>' +
+        '<div class="va-track" aria-hidden="true"><i data-pct="' + f.key + '"></i></div>' +
+        '<button type="button" class="va-step" data-step="' + f.key + '" data-dir="1" aria-label="Increase ' + f.label + '">+</button>' +
+      '</div></div>';
+  }).join('') +
+  '<div class="va-mod" role="group" aria-label="Product type"><span class="va-eng">Product type</span><div class="va-types">' +
+  TYPES.map(function (t) {
+    return '<div><span class="va-led" data-typeled="' + t.id + '" style="width:8px;height:8px"></span>' +
+      '<button type="button" class="va-round" data-type="' + t.id + '" aria-label="' + t.name + ' quality (' + t.id + ')">' + t.id + '</button><small>' + t.name + '</small></div>';
+  }).join('') + '</div></div>';
 
-    function showDelta(id, value, unit) {
-      const text = value.toLocaleString('en-US', {
-        maximumFractionDigits: 1,
-        signDisplay: 'exceptZero'
-      });
-      document.getElementById(id).textContent = text + ' ' + unit;
-    }
+  // ---------- Build B channel strips ----------
+  var BUNITS = { air: 'kelvin', proc: 'kelvin', speed: 'rpm', torque: 'N·m', wear: 'minutes' };
+  var BSTEP = { air: 0.1, proc: 0.1, speed: 1, torque: 0.1, wear: 1 };
+  var vbGrid = document.getElementById('vb-grid');
+  vbGrid.innerHTML = FIELDS.map(function (f) {
+    return '<div class="vb-ch' + (f.used ? ' used' : '') + '">' +
+      '<label for="b-' + f.key + '">' + f.label + '</label>' +
+      '<input id="b-' + f.key + '" class="vb-num" type="number" step="' + BSTEP[f.key] + '" min="' + f.min + '" max="' + f.max + '" data-input="' + f.key + '">' +
+      '<span class="vb-unit">' + BUNITS[f.key] + '</span>' +
+      '<div class="vb-fwrap"><input class="vb-fader" type="range" aria-label="' + f.label + ' fader" min="' + f.min + '" max="' + f.max + '" step="' + BSTEP[f.key] + '" data-range="' + f.key + '">' +
+      '<div class="vb-scale" aria-hidden="true"><span>' + fmt(f.max, 0) + '</span><span>' + fmt(f.min, 0) + '</span></div></div>' +
+    '</div>';
+  }).join('') +
+  '<div class="vb-ch" role="group" aria-label="Product type"><span class="lbl">Product type</span>' +
+  TYPES.map(function (t) { return '<button type="button" class="vb-type" data-type="' + t.id + '"><b>' + t.id + '</b><span>' + t.name + '</span></button>'; }).join('') +
+  '</div>';
 
-    function clearResult() {
-      resultAnimation?.cancel();
-      selectScenario(null);
-      result.dataset.state = 'ready';
-      statusText.textContent = 'No inspection run yet';
-      instruction.textContent = 'Load a sample or enter your readings and click Check conditions.';
-      instruction.hidden = false;
-      powerValue.hidden = true;
-      demoLimit.hidden = true;
-      comparison.hidden = true;
-      comparison.open = false;
-      range.hidden = true;
-      dial.style.removeProperty('--angle');
-      marker.style.left = '0%';
-    }
+  // ---------- Update ----------
+  function update() {
+    var P = watts(state.speed, state.torque);
+    var b = SAMPLES.baseline, Pb = watts(b.speed, b.torque);
+    var tone = P < LOW_W ? 'below' : (P > HIGH_W ? 'above' : 'within');
+    var diff = P - Pb, pct = diff / Pb * 100, sign = diff < 0 ? '−' : '+';
+    var v = {
+      power: fmt(Math.round(P), 0),
+      base: fmt(Math.round(Pb), 0),
+      diff: sign + fmt(Math.abs(Math.round(diff)), 0) + ' W',
+      pct: sign + Math.abs(Math.round(pct)) + '%',
+      status: tone === 'below' ? 'Below demo range' : tone === 'above' ? 'Above demo range' : 'Within demo range',
+      sentence: fmt(Math.round(P), 0) + ' W is ' + tone + ' the 3,500–8,500 W demo range.',
+      sampleLabel: SAMPLES[state.sample] ? SAMPLES[state.sample].label : 'Custom values',
+      typeLabel: 'TYPE ' + state.type,
+      rpmLabel: fmt(state.speed, 0) + ' RPM'
+    };
+    FIELDS.forEach(function (f) { v['f_' + f.key] = fmt(state[f.key], f.dec); });
 
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-      const speed = form.elements.speed.valueAsNumber;
-      const torque = form.elements.torque.valueAsNumber;
-      const power = estimatePower(speed, torque);
+    document.body.dataset.tone = tone;
+    document.querySelectorAll('[data-text]').forEach(function (el) { var k = el.dataset.text; if (k in v) el.textContent = v[k]; });
 
-      if (!Number.isFinite(power)) {
-        clearResult();
-        statusText.textContent = 'Power could not be calculated';
-        instruction.textContent = 'Enter smaller values for speed and torque and try again.';
-        return;
-      }
+    var angle = ready ? -120 + 240 * clamp(P / MAX_W, 0, 1) : -120;
+    document.querySelectorAll('.needle').forEach(function (n) { n.style.transform = 'rotate(' + angle.toFixed(1) + 'deg)'; });
+    document.querySelectorAll('.dial').forEach(function (d) { d.setAttribute('aria-label', 'Power dial: ' + v.power + ' watts, ' + v.status.toLowerCase()); });
 
-      const below = power < minPower;
-      const above = power > maxPower;
-      const position = Math.min(power / gaugeMax, 1);
+    document.querySelectorAll('[data-bar="cur"]').forEach(function (el) { el.style.width = (clamp(P / MAX_W, 0, 1) * 100).toFixed(1) + '%'; });
+    document.querySelectorAll('[data-bar="base"]').forEach(function (el) { el.style.width = (clamp(Pb / MAX_W, 0, 1) * 100).toFixed(1) + '%'; });
+    document.querySelectorAll('[data-pct]').forEach(function (el) { var f = byKey[el.dataset.pct]; el.style.width = ((state[f.key] - f.min) / (f.max - f.min) * 100).toFixed(1) + '%'; });
+    document.querySelectorAll('[data-shaft]').forEach(function (el) { el.style.animationDuration = (1200 / Math.max(state.speed, 1)).toFixed(2) + 's'; });
 
-      result.dataset.state = below || above ? 'flagged' : 'clear';
-      if (below) {
-        statusText.textContent = 'Below demo range';
-      } else if (above) {
-        statusText.textContent = 'Above demo range';
-      } else {
-        statusText.textContent = 'Within demo range';
-      }
+    document.querySelectorAll('[data-sample]').forEach(function (el) { el.setAttribute('aria-pressed', String(el.dataset.sample === state.sample)); });
+    document.querySelectorAll('[data-type]').forEach(function (el) { el.setAttribute('aria-pressed', String(el.dataset.type === state.type)); });
+    document.querySelectorAll('[data-typeled]').forEach(function (el) { el.classList.toggle('amber', el.dataset.typeled === state.type); });
 
-      powerValue.textContent = Math.round(power).toLocaleString('en-US') + ' W';
-      instruction.hidden = true;
-      powerValue.hidden = false;
-      demoLimit.hidden = false;
-      range.hidden = false;
-
-      dial.style.setProperty('--angle', (position * 240 - 120) + 'deg');
-      marker.style.left = (position * 100) + '%';
-
-      showDelta('torque-delta', torque - baselineTorque, 'N·m');
-      showDelta('speed-delta', speed - baselineSpeed, 'rpm');
-      showDelta('power-delta', power - estimatePower(baselineSpeed, baselineTorque), 'W');
-      comparison.hidden = false;
-
-      resultAnimation?.cancel();
-      if (!reducedMotion.matches) {
-        resultAnimation = powerValue.animate(
-          [
-            { opacity: .25, transform: 'translateY(5px)' },
-            { opacity: 1, transform: 'translateY(0)' }
-          ],
-          { duration: 320, easing: 'ease-out' }
-        );
-      }
+    document.querySelectorAll('[data-input]').forEach(function (el) {
+      if (el === document.activeElement) return;
+      var f = byKey[el.dataset.input]; el.value = state[f.key].toFixed(f.dec);
     });
+    document.querySelectorAll('[data-range]').forEach(function (el) { el.value = state[el.dataset.range]; });
+  }
 
-    form.addEventListener('input', clearResult);
-    form.addEventListener('reset', clearResult);
+  function setField(key, raw, opts) {
+    var f = byKey[key], n = parseFloat(raw);
+    if (isNaN(n)) return;
+    if (opts && opts.snap) n = Math.round(n / f.step) * f.step;
+    if (!opts || !opts.loose) n = clamp(n, f.min, f.max);
+    state[key] = Number(n.toFixed(f.dec));
+    state.sample = 'custom';
+    update();
+  }
 
-    for (const button of scenarioButtons) {
-      button.addEventListener('click', () => {
-        // Load the sample values without resetting the current gauge position.
-        for (const input of form.querySelectorAll('input')) {
-          input.value = input.defaultValue;
-        }
-        const productType = form.elements.namedItem('type');
-        const defaultProduct = Array.from(productType.options).find(option => option.defaultSelected);
-        productType.value = defaultProduct.value;
-        form.elements.torque.value = button.dataset.torque;
-        selectScenario(button);
-        form.requestSubmit();
-      });
-    }
+  // ---------- Events ----------
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.sample) { Object.assign(state, SAMPLES[t.dataset.sample], { sample: t.dataset.sample }); update(); }
+    else if (t.dataset.type) { state.type = t.dataset.type; state.sample = 'custom'; update(); }
+    else if (t.dataset.step) { var f = byKey[t.dataset.step]; setField(f.key, state[f.key] + f.step * Number(t.dataset.dir), { snap: true }); }
+    else if (t.dataset.view) { show(t.dataset.view); }
+  });
+  document.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el.dataset.range) setField(el.dataset.range, el.value);
+    else if (el.dataset.input) setField(el.dataset.input, el.value, { loose: true });
+  });
+  document.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.dataset.input) { setField(el.dataset.input, el.value === '' ? state[el.dataset.input] : el.value); el.value = state[el.dataset.input].toFixed(byKey[el.dataset.input].dec); }
+  });
 
-    const motor = document.querySelector('#motor').getContext('2d');
-
-    function rectangle(x, y, width, height, color) {
-      motor.fillStyle = color;
-      motor.fillRect(x, y, width, height);
-    }
-
-    function ellipse(x, y, radiusX, radiusY, color) {
-      motor.beginPath();
-      motor.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
-      motor.fillStyle = color;
-      motor.fill();
-    }
-
-    ellipse(166, 227, 143, 16, '#85612f40');
-    rectangle(40, 192, 250, 24, '#254572');
-    rectangle(59, 171, 29, 27, '#355d99');
-    rectangle(222, 171, 29, 27, '#355d99');
-    rectangle(92, 29, 72, 38, '#254572');
-
-    motor.beginPath();
-    motor.roundRect(46, 62, 204, 121, 30);
-    motor.fillStyle = '#365fa2';
-    motor.fill();
-
-    for (let y = 86; y <= 162; y += 19) {
-      rectangle(67, y, 126, 4, '#86a8e2');
-    }
-
-    ellipse(227, 122, 49, 60, '#254572');
-    ellipse(230, 122, 43, 57, '#5279ba');
-    ellipse(238, 122, 26, 35, '#2b4d84');
-    rectangle(238, 112, 77, 20, '#829cc7');
-    ellipse(315, 122, 9, 10, '#a4badf');
-  </script>
+  // ---------- View switching (also via #a, #b, #c) ----------
+  function show(id) {
+    if (['a', 'b', 'c'].indexOf(id) < 0) id = 'a';
+    ['a', 'b', 'c'].forEach(function (k) { document.getElementById('view-' + k).hidden = k !== id; });
+    document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === id)); });
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    // re-sweep the needle so each direction shows its animation
+    ready = false; update();
+    requestAnimationFrame(function () { requestAnimationFrame(function () { ready = true; update(); }); });
+  }
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  update();
+  show(location.hash.slice(1) || 'a');
+})();
+</script>
 </body>
 </html>
